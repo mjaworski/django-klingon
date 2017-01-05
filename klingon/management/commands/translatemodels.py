@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
-from klingon.compat import get_model
+from klingon.compat import get_model, V110, version
 import os
-from django import VERSION as DJANGO_VERSION
 
 
 class Command(BaseCommand):
@@ -9,8 +8,11 @@ class Command(BaseCommand):
     help = 'Create translation for specific models <app>.<model_name>' \
         ' \n Example: \n $ python manage.py translatemodels testapp.Book'
 
+    def add_arguments(self, parser):
+        if version == V110:
+            parser.add_argument('args', nargs='*', default=[])
+
     def handle(self, *args, **options):
-        print 'ARGS', args
         for model_name in args:
             try:
                 app, name = model_name.split('.')
@@ -21,10 +23,3 @@ class Command(BaseCommand):
                 raise CommandError('Error, can not translate model "%s". %s' % (model_name, e))
             else:
                 self.stdout.write('All translations created for "%s"' % model_name)
-
-
-def _add_arguments(self, parser):
-    parser.add_argument('args', nargs='*', default=[])
-
-if DJANGO_VERSION[1] == 10:
-    Command.add_arguments = _add_arguments
